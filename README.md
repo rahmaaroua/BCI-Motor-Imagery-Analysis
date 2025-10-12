@@ -117,7 +117,7 @@ Or manually download from: https://www.bbci.de/competition/iv/#datasets
 
 ### 2. Run Notebooks Sequentially
 ```bash
-jupyter notebook notebooks/01_dataset_exploration.ipynb
+jupyter notebook notebooks/04_classification_traditional.ipynb
 ```
 
 Follow notebooks in order (01 → 07) for complete pipeline.
