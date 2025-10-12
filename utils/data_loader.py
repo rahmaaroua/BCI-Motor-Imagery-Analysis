@@ -2,6 +2,7 @@
 Data loading utilities for BCI Competition IV Dataset 2a
 
 Functions for loading raw EEG data and labels from .gdf and .mat files.
+FIXED: Added workaround for NumPy/MNE compatibility issue
 """
 
 import os
@@ -59,6 +60,8 @@ def load_subject_data(subject_id: str,
     """
     Load EEG data and labels for a specific subject and session
 
+    FIXED: Added workaround for NumPy 1.26+ compatibility issue with MNE
+
     Parameters
     ----------
     subject_id : str
@@ -90,8 +93,29 @@ def load_subject_data(subject_id: str,
     if not os.path.exists(mat_file):
         raise FileNotFoundError(f"MAT file not found: {mat_file}")
 
-    # Load raw EEG data
-    raw = mne.io.read_raw_gdf(gdf_file, preload=True, verbose=False)
+    # WORKAROUND: Temporarily patch numpy.clip to handle the dtype issue
+    # This fixes the compatibility problem between NumPy 1.26+ and MNE
+    original_clip = np.clip
+
+    def patched_clip(a, a_min, a_max, out=None, **kwargs):
+        if out is not None and hasattr(out, 'dtype'):
+            # If output dtype is uint32 and we're clipping with float bounds
+            if out.dtype == np.uint32 and (isinstance(a_max, float) or a_max == np.inf):
+                # Don't use in-place operation, convert afterward
+                result = original_clip(a, a_min, np.iinfo(np.uint32).max, **kwargs)
+                np.copyto(out, result.astype(np.uint32))
+                return out
+        return original_clip(a, a_min, a_max, out=out, **kwargs)
+
+    # Apply patch
+    np.clip = patched_clip
+
+    try:
+        # Load raw EEG data
+        raw = mne.io.read_raw_gdf(gdf_file, preload=True, verbose=False)
+    finally:
+        # Restore original numpy.clip
+        np.clip = original_clip
 
     # Load labels
     mat_data = sio.loadmat(mat_file)

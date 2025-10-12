@@ -76,17 +76,6 @@ bci-motor-imagery-analysis/
 ├── 📄 docs/                               # Documentation
 │   ├── EEG_Analysis_Report.pdf            # Full academic report
 │   ├── references.bib                     # Bibliography
-│   └── methodology.md                     # Detailed methodology
-│
-├── 🔧 config/                             # Configuration files
-│   ├── preprocessing_config.yaml          # Preprocessing parameters
-│   ├── feature_config.yaml                # Feature extraction settings
-│   └── model_config.yaml                  # Model hyperparameters
-│
-├── 🧪 tests/                              # Unit tests (optional)
-│   ├── test_preprocessing.py
-│   ├── test_features.py
-│   └── test_models.py
 │
 ├── 📋 requirements.txt                    # Python dependencies
 ├── 🐍 environment.yml                     # Conda environment

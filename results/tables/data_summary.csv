@@ -1,0 +1,2 @@
+subject_id,session,sampling_rate,n_channels,n_eeg_channels,n_eog_channels,n_trials,n_classes,duration_sec,mean_amplitude_uV,std_amplitude_uV,min_amplitude_uV,max_amplitude_uV
+A01,T,250.0,25,22,3,288,4,2690.108,10.871732227503657,55.405972227953455,-1599.9999999999998,99.951171875
