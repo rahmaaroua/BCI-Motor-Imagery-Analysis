@@ -151,13 +151,13 @@ Contributions are welcome! Please:
 
 **Rahma Aroua**
 - GitHub: [@rahmaaroua](https://github.com/rahmaaroua)
-- Email: aroua.rahma@example.com
+- Email: rahma.aroua@etudiant-fst.utm.tn
 
 ---
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT [LICENSE](LICENSE).
 
 
 ---
