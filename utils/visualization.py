@@ -502,6 +502,47 @@ def plot_channel_amplitude(raw: mne.io.Raw,
 
     plt.show()
 
+# ==================== Plot csp robust ====================
+import matplotlib.pyplot as plt
+import numpy as np
+import mne
+
+def plot_csp_patterns_robust(csp, epochs, save_path, n_components=4):
+    """
+    Plot first m and last m CSP spatial patterns (robust version).
+    Saves figure to save_path.
+    """
+    patterns = csp.patterns_
+    m = n_components // 2
+
+    first_components = patterns[:, :m]
+    last_components = patterns[:, -m:]
+
+    fig, axes = plt.subplots(2, m, figsize=(4 * m, 7))
+
+    for i in range(m):
+        ax = axes[0, i]
+        try:
+            mne.viz.plot_topomap(first_components[:, i], epochs.info, axes=ax,
+                                 show=False, cmap="RdBu_r", contours=6)
+            ax.set_title(f"Component {i+1}")
+        except Exception:
+            ax.bar(np.arange(patterns.shape[0]), first_components[:, i])
+
+    for i in range(m):
+        ax = axes[1, i]
+        try:
+            mne.viz.plot_topomap(last_components[:, i], epochs.info, axes=ax,
+                                 show=False, cmap="RdBu_r", contours=6)
+            ax.set_title(f"Component {n_components - m + i + 1}")
+        except Exception:
+            ax.bar(np.arange(patterns.shape[0]), last_components[:, i])
+
+    fig.suptitle("CSP Spatial Patterns", fontsize=14, fontweight='bold')
+    fig.tight_layout(rect=[0.03, 0, 1, 0.96])
+    fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.show()
+
 
 # ==================== Summary Statistics ====================
 

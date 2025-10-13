@@ -1,0 +1,6 @@
+Feature Type,Method,Features,Domain,Mean MI
+Common Spatial Patterns,CSP (One-vs-Rest),6,Spatial,0.3950
+Band Power,Welch PSD (4 bands),100,Frequency,0.1138
+Hjorth Parameters,Activity/Mobility/Complexity,75,Time,0.1579
+Statistical,Mean/Std/Skew/Kurt,100,Statistical,0.0881
+TOTAL,Combined & Normalized,281,Multi-domain,0.1224
