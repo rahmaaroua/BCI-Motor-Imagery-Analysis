@@ -8,10 +8,10 @@
 ---
 
 ## 📋 Table of Contents
-- [Overview](#overview)
-- [Repository Structure](#repository-structure)
-- [Notebooks Guide](#notebooks-guide)
-- [License](#license)
+- [Overview](##overview)
+- [Repository Structure](##repository-structure)
+- [Notebooks Guide](##notebooks-guide)
+- [License](##license)
 
 ---
 
@@ -65,13 +65,14 @@ bci-motor-imagery-analysis/
 │   └── deep_learning/                     # PyTorch/TensorFlow models
 │
 ├── 📈 results/                            # Generated results
+|   ├── classification_results/
 │   ├── figures/                           # All generated plots
-│   ├── tables/                            # CSV result tables
-│   └── metrics/                           # Classification metrics
+│   └── tables/                            # CSV result tables
+│  
 │
 ├── 📄 docs/                               # Documentation
 │   ├── EEG_Analysis_Report.pdf            # Full academic report
-│   ├── references.bib                     # Bibliography
+│   └── references.bib                     # Bibliography
 │
 ├── 📋 requirements.txt                    # Python dependencies
 ├── 📖 README.md                           # This file
