@@ -14,7 +14,6 @@ from sklearn.model_selection import StratifiedKFold
 from scipy import stats
 from typing import Tuple, Dict, Optional
 
-
 def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray,
                     class_names: Optional[list] = None) -> Dict:
     """
@@ -81,7 +80,7 @@ def compute_information_transfer_rate(accuracy: float, n_classes: int = 4,
     """
     Compute Information Transfer Rate (ITR) in bits per minute
 
-    ITR quantifies communication speed of a BCI system
+    ENHANCED: Better edge case handling
 
     Parameters
     ----------
@@ -96,35 +95,59 @@ def compute_information_transfer_rate(accuracy: float, n_classes: int = 4,
     -------
     itr : float
         Information transfer rate in bits/minute
-    """
-    if accuracy == 1.0:
-        accuracy = 0.9999  # Avoid log(0)
-    elif accuracy == 0.0:
-        accuracy = 0.0001
 
-    # ITR formula from Wolpaw et al.
+    References
+    ----------
+    Wolpaw, J. R., et al. (2000). Brain-computer interface technology:
+    a review of the first international meeting. IEEE transactions on
+    rehabilitation engineering, 8(2), 164-173.
+
+    Examples
+    --------
+    >>> itr = compute_information_transfer_rate(0.75, 4, 4.0)
+    >>> print(f"ITR: {itr:.2f} bits/min")
+    """
+    # Clip accuracy to valid range
+    accuracy = np.clip(accuracy, 1e-10, 1 - 1e-10)
+
     P = accuracy
     N = n_classes
 
+    # Below chance level
     if P < 1.0 / N:
-        return 0.0  # Below chance level
+        return 0.0
 
-    bits_per_trial = np.log2(N) + P * np.log2(P) + (1 - P) * np.log2((1 - P) / (N - 1))
+    # Calculate bits per trial using ITR formula
+    if P >= 0.99999:
+        # Near perfect accuracy
+        bits_per_trial = np.log2(N)
+    else:
+        bits_per_trial = (
+                np.log2(N) +
+                P * np.log2(P) +
+                (1 - P) * np.log2((1 - P) / (N - 1))
+        )
+
+    # Ensure non-negative
+    bits_per_trial = max(0, bits_per_trial)
+
+    # Convert to bits per minute
     trials_per_minute = 60.0 / trial_duration
     itr = bits_per_trial * trials_per_minute
 
-    return max(0, itr)  # ITR cannot be negative
-
+    return max(0, itr)
 
 def cross_validate_subject(model, X: np.ndarray, y: np.ndarray,
                            cv: int = 5) -> Dict:
     """
     Perform stratified k-fold cross-validation
 
+    FIXED: Now properly clones model for each fold
+
     Parameters
     ----------
     model : sklearn estimator
-        Model to validate
+        Model to validate (will be cloned for each fold)
     X : np.ndarray
         Feature matrix
     y : np.ndarray
@@ -136,7 +159,15 @@ def cross_validate_subject(model, X: np.ndarray, y: np.ndarray,
     -------
     results : dict
         Cross-validation results with metrics per fold
+
+    Examples
+    --------
+    >>> from sklearn.svm import SVC
+    >>> model = SVC(kernel='rbf', C=1.0)
+    >>> results = cross_validate_subject(model, X, y, cv=5)
     """
+    from sklearn.base import clone  # IMPORTANT: Import clone
+
     skf = StratifiedKFold(n_splits=cv, shuffle=True, random_state=42)
 
     fold_accuracies = []
@@ -145,13 +176,18 @@ def cross_validate_subject(model, X: np.ndarray, y: np.ndarray,
     all_y_true = []
     all_y_pred = []
 
-    for fold, (train_idx, val_idx) in enumerate(skf.split(X, y)):
+    print(f"\nPerforming {cv}-fold cross-validation...")
+
+    for fold, (train_idx, val_idx) in enumerate(skf.split(X, y), 1):
         X_train, X_val = X[train_idx], X[val_idx]
         y_train, y_val = y[train_idx], y[val_idx]
 
+        # FIXED: Clone model for each fold to avoid reusing fitted model
+        model_fold = clone(model)
+
         # Train and predict
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_val)
+        model_fold.fit(X_train, y_train)
+        y_pred = model_fold.predict(X_val)
 
         # Compute metrics
         acc = accuracy_score(y_val, y_pred)
@@ -165,6 +201,8 @@ def cross_validate_subject(model, X: np.ndarray, y: np.ndarray,
         all_y_true.extend(y_val)
         all_y_pred.extend(y_pred)
 
+        print(f"  Fold {fold}/{cv}: Acc={acc:.4f}, Kappa={kappa:.4f}, F1={f1:.4f}")
+
     results = {
         'accuracy_mean': np.mean(fold_accuracies),
         'accuracy_std': np.std(fold_accuracies),
@@ -174,13 +212,14 @@ def cross_validate_subject(model, X: np.ndarray, y: np.ndarray,
         'f1_std': np.std(fold_f1s),
         'fold_accuracies': fold_accuracies,
         'fold_kappas': fold_kappas,
+        'fold_f1s': fold_f1s,  # ADDED: was missing
         'confusion_matrix': confusion_matrix(all_y_true, all_y_pred),
     }
 
-    print(f"Cross-validation ({cv}-fold):")
-    print(f"  Accuracy: {results['accuracy_mean']:.4f} ± {results['accuracy_std']:.4f}")
-    print(f"  Kappa:    {results['kappa_mean']:.4f} ± {results['kappa_std']:.4f}")
-    print(f"  F1-score: {results['f1_mean']:.4f} ± {results['f1_std']:.4f}")
+    print(f"\n  Cross-validation results ({cv}-fold):")
+    print(f"    Accuracy: {results['accuracy_mean']:.4f} ± {results['accuracy_std']:.4f}")
+    print(f"    Kappa:    {results['kappa_mean']:.4f} ± {results['kappa_std']:.4f}")
+    print(f"    F1-score: {results['f1_mean']:.4f} ± {results['f1_std']:.4f}")
 
     return results
 
@@ -340,9 +379,12 @@ def statistical_comparison(results1: np.ndarray, results2: np.ndarray,
     return test_results
 
 
-def create_performance_summary(all_metrics: Dict, save_path: Optional[str] = None) -> None:
+def create_performance_summary(all_metrics: Dict,
+                               save_path: Optional[str] = None):
     """
     Create and display comprehensive performance summary
+
+    FIXED: Now returns DataFrame (needed by notebook 04)
 
     Parameters
     ----------
@@ -350,6 +392,19 @@ def create_performance_summary(all_metrics: Dict, save_path: Optional[str] = Non
         Dictionary containing all computed metrics
     save_path : str, optional
         Path to save summary table
+
+    Returns
+    -------
+    df : pd.DataFrame
+        Summary DataFrame
+
+    Examples
+    --------
+    >>> all_results = {
+    ...     'LDA': lda_cv_results,
+    ...     'SVM': svm_cv_results
+    ... }
+    >>> df = create_performance_summary(all_results, 'summary.csv')
     """
     import pandas as pd
 
@@ -381,3 +436,99 @@ def create_performance_summary(all_metrics: Dict, save_path: Optional[str] = Non
         print(f"✓ Summary saved to {save_path}")
 
     return df
+
+
+def compare_models(results_dict: Dict, metric: str = 'accuracy',
+                   figsize: tuple = (12, 6)) -> plt.Figure:
+    """
+    Compare multiple models using box plots
+
+    Parameters
+    ----------
+    results_dict : dict
+        Dictionary with model names as keys and CV results as values
+        Each result should have 'fold_accuracies', 'fold_kappas', etc.
+    metric : str
+        Metric to compare ('accuracy', 'kappa', 'f1')
+    figsize : tuple
+        Figure size
+
+    Returns
+    -------
+    fig : matplotlib.Figure
+        Comparison plot
+
+    Examples
+    --------
+    >>> all_results = {
+    ...     'LDA': lda_cv_results,
+    ...     'SVM': svm_cv_results,
+    ...     'RF': rf_cv_results
+    ... }
+    >>> fig = compare_models(all_results, metric='accuracy')
+    >>> plt.savefig('model_comparison.png')
+    """
+    fig, ax = plt.subplots(figsize=figsize)
+
+    # Extract data for plotting
+    model_names = list(results_dict.keys())
+    data_to_plot = []
+
+    # Map metric to the correct key in results
+    if metric == 'accuracy':
+        metric_key = 'fold_accuracies'
+    elif metric == 'kappa':
+        metric_key = 'fold_kappas'
+    elif metric == 'f1':
+        metric_key = 'fold_f1s'
+    else:
+        raise ValueError(f"Unknown metric: {metric}")
+
+    for model_name in model_names:
+        if metric_key in results_dict[model_name]:
+            data_to_plot.append(results_dict[model_name][metric_key])
+        else:
+            print(f"Warning: {metric_key} not found for {model_name}")
+            data_to_plot.append([0])  # Placeholder
+
+    # Create box plot
+    bp = ax.boxplot(data_to_plot, labels=model_names, patch_artist=True,
+                    notch=True, widths=0.6)
+
+    # Customize colors
+    colors = sns.color_palette("Set2", len(model_names))
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.7)
+
+    # Customize whiskers and caps
+    for whisker in bp['whiskers']:
+        whisker.set(linewidth=1.5, linestyle='-')
+    for cap in bp['caps']:
+        cap.set(linewidth=1.5)
+    for median in bp['medians']:
+        median.set(color='red', linewidth=2)
+
+    # Add mean markers
+    means = [np.mean(data) for data in data_to_plot]
+    ax.plot(range(1, len(means) + 1), means, 'D', color='darkred',
+            markersize=8, label='Mean', zorder=3,
+            markeredgecolor='black', markeredgewidth=1)
+
+    # Formatting
+    ax.set_ylabel(metric.capitalize(), fontsize=12, fontweight='bold')
+    ax.set_xlabel('Model', fontsize=12, fontweight='bold')
+    ax.set_title(f'Model Comparison: {metric.capitalize()}',
+                 fontsize=14, fontweight='bold')
+    ax.grid(axis='y', alpha=0.3, linestyle='--')
+    ax.legend(fontsize=10)
+
+    # Add value annotations
+    y_range = ax.get_ylim()[1] - ax.get_ylim()[0]
+    for i, (model_name, mean_val) in enumerate(zip(model_names, means)):
+        ax.text(i + 1, ax.get_ylim()[0] + y_range * 0.02,
+                f'{mean_val:.3f}',
+                ha='center', va='bottom', fontsize=9, fontweight='bold')
+
+    plt.tight_layout()
+    return fig
