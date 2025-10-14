@@ -10,11 +10,7 @@
 ## 📋 Table of Contents
 - [Overview](#overview)
 - [Repository Structure](#repository-structure)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
 - [Notebooks Guide](#notebooks-guide)
-- [Results](#results)
-- [Citation](#citation)
 - [License](#license)
 
 ---
@@ -78,8 +74,6 @@ bci-motor-imagery-analysis/
 │   ├── references.bib                     # Bibliography
 │
 ├── 📋 requirements.txt                    # Python dependencies
-├── 🐍 environment.yml                     # Conda environment
-├── 🚀 setup.py                            # Package installation
 ├── 📖 README.md                           # This file
 ├── 📜 LICENSE                             # MIT License
 └── 🙈 .gitignore                          # Git ignore rules
@@ -125,16 +119,6 @@ bci-motor-imagery-analysis/
 - **Output:** Baseline classification results
 
 ---
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
 
 ## 📧 Contact
 
@@ -147,8 +131,3 @@ Contributions are welcome! Please:
 ## 📜 License
 
 This project is licensed under the MIT [LICENSE](LICENSE).
-
-
----
-
-**⭐ Star this repo if you find it helpful!**
