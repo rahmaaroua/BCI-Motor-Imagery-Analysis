@@ -7,7 +7,9 @@ docs/*.log
 docs/*.out
 docs/*.toc
 docs/*.tex
+doc/EEG_Analysis_Report.tex
 
 # Ignore the nested docs folder
 docs/docs/
 out
+.gitignore
