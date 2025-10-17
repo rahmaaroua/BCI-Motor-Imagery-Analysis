@@ -8,10 +8,10 @@
 ---
 
 ## 📋 Table of Contents
-- [Overview](##overview)
-- [Repository Structure](##repository-structure)
-- [Notebooks Guide](##notebooks-guide)
-- [License](##license)
+- [Overview](#overview)
+- [Repository Structure](#repository-structure)
+- [Notebooks Guide](#notebooks-guide)
+- [License](#license)
 
 ---
 
@@ -22,18 +22,14 @@ This repository provides a complete, reproducible pipeline for EEG-based motor i
 ### Key Features
 - ✅ **Complete preprocessing pipeline** (filtering, ICA, artifact removal)
 - ✅ **Multiple feature extraction methods** (CSP, spectral, Hjorth, statistical)
-- ✅ **Comprehensive classification** (traditional ML + deep learning)
+- ✅ **Traditional ML classification** (LDA, SVM, Random Forest, k-NN)
 - ✅ **Interactive Jupyter notebooks** with detailed explanations
 - ✅ **Reproducible results** with proper validation
 - ✅ **Extensive visualizations** for interpretation
 
-### Academic Foundation
-This work is part of a research project, with detailed theoretical background documented in the accompanying [LaTeX report](docs/EEG_Analysis_Report.pdf).
-
 ---
 
 ## 📁 Repository Structure
-
 ```
 bci-motor-imagery-analysis/
 │
@@ -41,7 +37,7 @@ bci-motor-imagery-analysis/
 │   ├── 01_dataset_exploration.ipynb       # Data loading & visualization
 │   ├── 02_preprocessing_pipeline.ipynb    # Signal preprocessing
 │   ├── 03_feature_extraction.ipynb        # CSP, spectral, statistical features
-│   ├── 04_classification_traditional.ipynb # LDA, SVM, Random Forest
+│   └── 04_classification_traditional.ipynb # LDA, SVM, Random Forest, k-NN
 │
 ├── 📦 utils/                              # Utility modules (imported in notebooks)
 │   ├── __init__.py
@@ -57,27 +53,23 @@ bci-motor-imagery-analysis/
 │   │   ├── A01T.gdf
 │   │   ├── A01T.mat
 │   │   └── ...
-│   ├── processed/                         # Preprocessed data cache
-│   └── features/                          # Extracted features cache
+│   ├── processed/                         # Preprocessed epochs
+│   └── features/                          # Extracted features
 │
 ├── 🎯 models/                             # Saved models
-│   ├── traditional/                       # Scikit-learn models
-│   └── deep_learning/                     # PyTorch/TensorFlow models
+│   └── traditional/                       # Trained scikit-learn models
 │
 ├── 📈 results/                            # Generated results
-|   ├── classification_results/
 │   ├── figures/                           # All generated plots
-│   └── tables/                            # CSV result tables
-│  
+│   └── classification_results/            # Performance metrics
 │
 ├── 📄 docs/                               # Documentation
-│   ├── EEG_Analysis_Report.pdf            # Full academic report
-│   └── references.bib                     # Bibliography
+│   ├── EEG_Analysis_Report.tex            # Full LaTeX report
+│   └── EEG_Analysis_Report.pdf            # Compiled report
 │
 ├── 📋 requirements.txt                    # Python dependencies
 ├── 📖 README.md                           # This file
-├── 📜 LICENSE                             # MIT License
-└── 🙈 .gitignore                          # Git ignore rules
+└── 📜 LICENSE                             # MIT License
 ```
 ---
 
@@ -117,7 +109,7 @@ bci-motor-imagery-analysis/
 - Cross-validation strategies
 - Confusion matrices
 - Performance comparison
-- **Output:** Baseline classification results
+- **Output:** Classification results
 
 ---
 
